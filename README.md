@@ -65,6 +65,20 @@ docker build -f cpu.Dockerfile -t cat-dog-classification-service:cpu .
 docker build -f gpu.Dockerfile -t cat-dog-classification-service:gpu .
 ```
 
+> <b>Внимание!</b> Со сборкой контейнера для инференса на GPU есть некоторые особенности. В частности, требуется знать версию CUDA, которая установлена на вашем ПК.
+
+Проверить версию CUDA можно выполнив следующую команду:
+```bash
+nvidia-smi
+```
+
+Узнав версию CUDA, проверьте, поддерживает ли её выбранная версия ONNX Runtime (по умолчанию в репозитории приведена 1.17) на [сайте](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements).
+
+Если у вас версия CUDA 12.2 и старше, то gpu.Dockerfile можно оставить без изменений.
+
+Если у вас вресия CUDA 11.8 и младше, то подберите подходящую версию библиотеки ONNX Runtime на [сайте](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements) и замените её в gpu.Dockerfile (строка 14).
+Также найди подходящий Docker-образ от Nvidia на [сайте](https://hub.docker.com/r/nvidia/cuda/tags?page=2&page_size=&ordering=-name&name=), введя в поле с фильтром вашу версию CUDA. Выбрать надо ту версию, в названии которой есть слова <i>runtime</i> и <i>ubuntu22.04</i>.
+
 ### Запуск Docker-контейнера с сервисом
 
 Запуск Docker-контейнера может быть из двух вариантов Docker-образа: для инференса модели на CPU или на GPU.
@@ -80,7 +94,6 @@ cat-dog-classification-service:cpu
 Команда для запуска на GPU:
 ```bash
 docker run -d --name cat-dog-classification-service \
---runtime=nvidia \
 --gpus all \
 -e SERVICE_NAME="Cat-Dog classification service" \
 -p 8080:8000 \
